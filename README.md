@@ -6,6 +6,25 @@ Each card is 384 dots wide and 1-bit: a contour map drawn from open elevation da
 sheet, with an inset cartouche carrying the place's name in its own script and a local ornament: Greek key friezes
 for Santorini, prayer flags for Kailash, a Swiss cross and km grid for the Matterhorn.
 
+<table>
+  <tr>
+    <td align="center" width="33%"><img src="examples/santorini.png" width="260" alt="Santorini map card"><br>
+      <sub><b>Santorini</b>: the caldera rim, Greek key friezes, engraved water-lining</sub></td>
+    <td align="center" width="33%"><img src="examples/fuji.png" width="260" alt="Mount Fuji map card"><br>
+      <sub><b>Mount Fuji</b>: 富士山 in a mincho serif, the near-perfect cone</sub></td>
+    <td align="center" width="33%"><img src="examples/kailash.png" width="260" alt="Mount Kailash map card"><br>
+      <sub><b>Mount Kailash</b>: Tibetan and Devanagari names, prayer flags, the sacred lakes</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="examples/matterhorn.png" width="260" alt="Matterhorn map card"><br>
+      <sub><b>Matterhorn</b>: swisstopo survey data, Swiss cross, km grid, the Hörnli route</sub></td>
+    <td align="center"><img src="examples/halong.png" width="260" alt="Ha Long Bay map card"><br>
+      <sub><b>Ha Long Bay</b>: white karst islands on a hatched sea, Dong Son drum bands</sub></td>
+    <td align="center"><img src="examples/ilulissat.png" width="260" alt="Ilulissat Icefjord map card"><br>
+      <sub><b>Ilulissat Icefjord</b>: iceberg symbols fanning out of the fjord, Greenland flag</sub></td>
+  </tr>
+</table>
+
 ## The `liltopomaps` skill
 
 `.claude/skills/liltopomaps/` makes a new card end to end: it judges whether a place has terrain worth a card,
