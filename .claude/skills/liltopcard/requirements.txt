@@ -1,0 +1,6 @@
+pillow
+numpy
+matplotlib
+scipy
+tifffile
+imagecodecs

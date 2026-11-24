@@ -1,0 +1,12 @@
+# local environment and generated files
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+
+# rendered cards and previews (regenerate with the liltopcard skill or presets.sh)
+/*.png
+previews/
+
+# local Claude Code settings
+.claude/settings.local.json
