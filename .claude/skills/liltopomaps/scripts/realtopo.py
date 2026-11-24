@@ -9,6 +9,7 @@ Downloads are cached under ~/.cache/liltopomaps.
 """
 import argparse
 import io
+import logging
 import math
 import os
 import urllib.request
@@ -20,6 +21,8 @@ import numpy as np  # noqa: E402
 from matplotlib import font_manager  # noqa: E402
 from PIL import Image, ImageDraw, ImageFont  # noqa: E402
 from scipy import ndimage  # noqa: E402
+
+from fontfallback import resolve as resolve_font  # noqa: E402  (open stand-ins off macOS)
 
 ap = argparse.ArgumentParser()
 ap.add_argument("out", nargs="?", default="realtopo.png")
@@ -260,9 +263,11 @@ S = 2                                  # supersample
 
 
 # ---------------------------------------------------------------- terrain (matplotlib)
+logging.getLogger("matplotlib.font_manager").setLevel(logging.ERROR)  # quiet weight-matching notices
 try:
-    font_manager.fontManager.addfont(FUTURA)
-    plt.rcParams["font.family"] = font_manager.FontProperties(fname=FUTURA).get_name()
+    futura = resolve_font(FUTURA, 0)[0]
+    font_manager.fontManager.addfont(futura)
+    plt.rcParams["font.family"] = font_manager.FontProperties(fname=futura).get_name()
 except Exception:
     pass
 plt.rcParams["hatch.linewidth"] = 0.9 * S
@@ -343,6 +348,7 @@ if args.grid:
 
 
 def font(path, size, index=0):
+    path, index = resolve_font(path, index)
     return ImageFont.truetype(path, round(size * S), index=index)
 
 

@@ -13,8 +13,9 @@ the same chassis; every card gets its own local soul. The output is always a **p
 - `$SKILL` = this skill's base directory (in this repo: `.claude/skills/liltopomaps`).
 - `$PY` = a Python with `$SKILL/requirements.txt` installed (in this repo: `.venv/bin/python`).
 - Shell variables don't persist between commands: write the paths out (or set them) in each command.
-- Fonts come from the macOS system library (`/System/Library/Fonts`), so cards render on macOS. Elsewhere, say so
-  rather than substituting fonts silently.
+- Fonts: always name the macOS fonts (table under "Fonts"). Where one isn't installed (Linux, Windows), the
+  renderer swaps in an open-licence lookalike, downloaded once to `~/.cache/liltopomaps/fonts`, and prints
+  `font: X not installed, using Y`. Mention the stand-ins when showing the preview.
 
 Name output files after the place (`moorea.png`) in the current directory.
 
@@ -140,27 +141,31 @@ Pick, for this place specifically:
   Secondary summits: `--label "summit|Name 7,694|lat|lon"` snaps to the local max within 3 km.
 - Caches: `~/.cache/liltopomaps/tiles`, `~/.cache/liltopomaps/dem` (Copernicus tiles are ~40 MB each).
 
-## Fonts (macOS)
+## Fonts
 
-Verify glyph coverage before designing (fontTools `getBestCmap()`), and render a quick test strip for complex
-scripts — Pillow's raqm shaping handles them. Known-good:
+Verify glyph coverage before designing (fontTools `getBestCmap()`; off macOS, check the stand-in file the renderer
+reports), and render a quick test strip for complex scripts — Pillow's raqm shaping handles them. Paths are relative
+to `/System/Library/Fonts/`. Known-good:
 
-| Script | Hero face | Notes |
-|---|---|---|
-| Japanese/Chinese | `Supplemental/Songti.ttc` idx 2 (TC Bold) | mincho feel; Hiragino Mincho not installed |
-| Tibetan | `Supplemental/Kokonor.ttf` (calligraphic), `Kailasa.ttc` idx 1 (clean, for labels) | tracking 0 |
-| Devanagari | `Supplemental/DevanagariMT.ttc` idx 1, `ITFDevanagari.ttc` | conjuncts shape fine |
-| Greek | `Supplemental/Didot.ttc` idx 2 + `--local-bold 0.5` | Didot hairlines vanish otherwise. Avenir Next (`/System/Library/Fonts/Avenir Next.ttc`) for Greek labels: 2 Demi Bold, 3 Demi Bold Italic, 6 Medium Italic |
-| Latin (Swiss etc.) | `Helvetica.ttc` idx 1 | |
-| Latin with diacritics (Vietnamese) | `Supplemental/Palatino.ttc` idx 2 | Ha Long |
-| Latin, classical (Greenlandic) | `Supplemental/Baskerville.ttc` idx 4 (hero), 5 (second line) | Ilulissat |
-| Cyrillic | `Supplemental/PTSans.ttc` idx 2 (Narrow Bold), 7 (Bold), 1 (Italic for water/glacier labels); `PTSerif.ttc` | PT = ParaType, Moscow. Also in Futura Bold, Helvetica, Rockwell, Didot Bold, DIN Condensed |
-| Armenian | `Supplemental/Mshtakan.ttc` idx 2 | Ararat; `SFArmenian.ttf` untested |
-| Georgian | `SFGeorgian.ttf` | untested |
-| Arabic | `Supplemental/Diwan Thuluth.ttf` (calligraphic), `Baghdad.ttc`, `GeezaPro.ttc` | tracking 0; untested |
-| Korean | `Supplemental/AppleMyungjo.ttf` | untested |
-| Ge'ez (Ethiopia) | `Supplemental/KefaIII.ttf` | untested |
-| Thai/Khmer/Lao/Myanmar/Sinhala | `* Sangam MN` / `* MN` families | untested |
+| Script | Hero face (macOS) | Stand-in elsewhere | Notes |
+|---|---|---|---|
+| Latin titles, labels | `Supplemental/Futura.ttc` 0 Medium, 1 Medium Italic, 2 Bold | Jost | the default face of every card |
+| Japanese/Chinese | `Supplemental/Songti.ttc` idx 2 (TC Bold) | Noto Serif TC Bold | mincho feel; Hiragino Mincho not installed |
+| Tibetan | `Supplemental/Kokonor.ttf` (calligraphic), `Kailasa.ttc` idx 1 (clean, for labels) | Jomolhari; Noto Serif Tibetan Bold | tracking 0 |
+| Devanagari | `Supplemental/DevanagariMT.ttc` idx 1 | Noto Serif Devanagari Bold | conjuncts shape fine; also `ITFDevanagari.ttc` (macOS only) |
+| Greek | `Supplemental/Didot.ttc` idx 2 + `--local-bold 0.5` | GFS Didot | Didot hairlines vanish otherwise. Avenir Next (`Avenir Next.ttc`) for Greek labels: 2 Demi Bold, 3 Demi Bold Italic, 6 Medium Italic (stand-in: Noto Sans) |
+| Latin (Swiss etc.) | `Helvetica.ttc` idx 1 | Nimbus Sans Bold | |
+| Latin with diacritics (Vietnamese) | `Supplemental/Palatino.ttc` idx 2 | TeX Gyre Pagella Bold | Ha Long |
+| Latin, classical (Greenlandic) | `Supplemental/Baskerville.ttc` idx 4 (hero), 5 (second line) | Libre Baskerville Bold / Italic | Ilulissat |
+| Cyrillic | `Supplemental/PTSans.ttc` idx 2 (Narrow Bold), 7 (Bold), 1 (Italic for water/glacier labels) | PT Sans (the same family) | PT = ParaType, Moscow. Also in Futura Bold, Helvetica; `PTSerif.ttc`, Rockwell, Didot Bold, DIN Condensed (macOS only) |
+| Armenian | `Supplemental/Mshtakan.ttc` idx 2; `SFArmenian.ttf` | Noto Serif Armenian Bold; Noto Sans Armenian | Ararat; SF Armenian untested |
+| Georgian | `SFGeorgian.ttf` | Noto Serif Georgian | untested |
+| Arabic | `Supplemental/Diwan Thuluth.ttf` (calligraphic) | Amiri | tracking 0; untested; also `Baghdad.ttc`, `GeezaPro.ttc` (macOS only) |
+| Korean | `Supplemental/AppleMyungjo.ttf` | Noto Serif KR | untested |
+| Ge'ez (Ethiopia) | `Supplemental/KefaIII.ttf` | Noto Serif Ethiopic | untested |
+| Thai/Khmer/Lao/Myanmar/Sinhala | `* Sangam MN` / `* MN` families | none: pass an installed Noto Serif file | untested |
+
+Faces marked macOS only, and any font not in this table, must be given as a file that exists on this machine.
 
 Futura has no ū/ō macrons — write "Honshu". **Never use Snell Roundhand** or other frilly Latin scripts: they
 fight the engraved survey-sheet style.

@@ -42,14 +42,15 @@ alternative.
 To use it in another project, copy the `.claude/skills/liltopomaps/` folder into that project's `.claude/skills/`
 or into `~/.claude/skills/`.
 
-## Setup (macOS)
+## Setup
 
 ```sh
 python3 -m venv .venv
 .venv/bin/pip install -r .claude/skills/liltopomaps/requirements.txt
 ```
 
-Fonts are taken from the macOS system font library (`/System/Library/Fonts`).
+On macOS the cards use the system fonts (Futura, Didot, Songti and friends). Elsewhere, open-licence lookalikes
+are downloaded on first use (Jost, GFS Didot, Noto, PT Sans…); the examples above were rendered with these.
 
 ## Rendering without Claude
 
@@ -69,6 +70,7 @@ Presets: `fuji`, `matterhorn`, `santorini`, `kailash`, `pyramiden`, `ararat`, `h
 - `check_points.py`: checks label coordinates against the elevation data before they go on a card.
 - `zoom.py`: dot-level enlargement of parts of a card.
 - `preview.py`: dot-exact enlargement on a paper mock-up.
+- `fontfallback.py`: open-licence stand-ins for the macOS fonts.
 
 ## Data and attribution
 
@@ -77,5 +79,9 @@ Presets: `fuji`, `matterhorn`, `santorini`, `kailash`, `pyramiden`, `ararat`, `h
 - [Terrain Tiles](https://registry.opendata.aws/terrain-tiles/) (Mapzen / AWS Open Data).
 - [swissALTI3D](https://www.swisstopo.admin.ch/en/height-model-swissalti3d), © swisstopo, used to patch
   satellite voids on Swiss peaks.
+- Stand-in fonts, downloaded on first use where the macOS fonts are missing: Jost, GFS Didot, Noto, Jomolhari,
+  PT Sans, Libre Baskerville and Amiri ([SIL Open Font License](https://openfontlicense.org), via
+  [Google Fonts](https://github.com/google/fonts)); TeX Gyre Pagella (GUST Font License); Nimbus Sans
+  ([URW base35](https://github.com/ArtifexSoftware/urw-base35-fonts)).
 
 Downloads are cached under `~/.cache/liltopomaps`.
