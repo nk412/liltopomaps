@@ -4,7 +4,7 @@ __pycache__/
 *.pyc
 .DS_Store
 
-# rendered cards and previews (regenerate with the liltopcard skill or presets.sh)
+# rendered cards and previews (regenerate with the liltopomaps skill or presets.sh)
 /*.png
 previews/
 

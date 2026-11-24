@@ -1,16 +1,16 @@
 ---
-name: liltopcard
+name: liltopomaps
 description: Make and preview a miniature "playing card" terrain map of a real place from real elevation data — contours, cliffs, coastlines and lakes, survey-sheet style, with an inset cartouche carrying the place's native-script name and a local ornament. Use when the user names a place (mountain, volcano, island, caldera, canyon, lake, fjord...) and wants a map/card of it, or asks for "another card". Politely turn down places without beautiful terrain (cities, flat land) and explain why.
 ---
 
-# Liltopcard
+# Liltopomaps
 
 A series of small (384 × ~475 dot, 1-bit) map cards, made to look like **little playing cards**. Every card shares
 the same chassis; every card gets its own local soul. The output is always a **preview** image.
 
 ## Setup
 
-- `$SKILL` = this skill's base directory (in this repo: `.claude/skills/liltopcard`).
+- `$SKILL` = this skill's base directory (in this repo: `.claude/skills/liltopomaps`).
 - `$PY` = a Python with `$SKILL/requirements.txt` installed (in this repo: `.venv/bin/python`).
 - Shell variables don't persist between commands: write the paths out (or set them) in each command.
 - Fonts come from the macOS system library (`/System/Library/Fonts`), so cards render on macOS. Elsewhere, say so
