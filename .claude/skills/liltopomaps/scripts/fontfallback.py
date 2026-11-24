@@ -2,7 +2,8 @@
 
 resolve(path, index) returns the font unchanged when it exists. Otherwise (Linux, Windows) it returns a close
 open-licence lookalike, downloaded once to ~/.cache/liltopomaps/fonts; variable fonts are cut to the matching
-weight with fontTools.
+weight with fontTools. A few open faces with no macOS counterpart are named by their own file name
+(e.g. --local-font UncialAntiqua-Regular.ttf) and downloaded the same way on every system.
 """
 import os
 import urllib.request
@@ -51,6 +52,17 @@ STAND_INS = {
     ("AppleMyungjo.ttf", 0): ("NotoSerifKR-Regular.ttf", GF + "notoserifkr/NotoSerifKR%5Bwght%5D.ttf", {"wght": 400}),
     ("KefaIII.ttf", 0): ("NotoSerifEthiopic-Regular.ttf", GF + "notoserifethiopic/NotoSerifEthiopic%5Bwdth,wght%5D.ttf",
                          {"wght": 400, "wdth": 100}),
+    # open faces with no macOS counterpart, named by their own file name and downloaded on every system
+    ("IbarraRealNova-Bold.ttf", 0): ("IbarraRealNova-Bold.ttf", GF + "ibarrarealnova/IbarraRealNova%5Bwght%5D.ttf",
+                                     {"wght": 700}),
+    ("IbarraRealNova-Italic.ttf", 0): ("IbarraRealNova-Italic.ttf",
+                                       GF + "ibarrarealnova/IbarraRealNova-Italic%5Bwght%5D.ttf", {"wght": 400}),
+    ("NotoNastaliqUrdu-Bold.ttf", 0): ("NotoNastaliqUrdu-Bold.ttf", GF + "notonastaliqurdu/NotoNastaliqUrdu%5Bwght%5D.ttf",
+                                       {"wght": 700}),
+    ("NotoNaskhArabic-SemiBold.ttf", 0): ("NotoNaskhArabic-SemiBold.ttf",
+                                          GF + "notonaskharabic/NotoNaskhArabic%5Bwght%5D.ttf", {"wght": 600}),
+    ("Monomakh-Regular.ttf", 0): ("Monomakh-Regular.ttf", GF + "monomakh/Monomakh-Regular.ttf", None),
+    ("UncialAntiqua-Regular.ttf", 0): ("UncialAntiqua-Regular.ttf", GF + "uncialantiqua/UncialAntiqua-Regular.ttf", None),
 }
 _done = {}
 

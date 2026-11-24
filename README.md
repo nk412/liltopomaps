@@ -23,6 +23,22 @@ for Santorini, prayer flags for Kailash, a Swiss cross and km grid for the Matte
     <td align="center"><img src="examples/ilulissat.png" width="260" alt="Ilulissat Icefjord map card"><br>
       <sub><b>Ilulissat Icefjord</b>: iceberg symbols fanning out of the fjord, Greenland flag</sub></td>
   </tr>
+  <tr>
+    <td align="center"><img src="examples/ararat.png" width="260" alt="Mount Ararat map card"><br>
+      <sub><b>Mount Ararat</b>: Armenian Մասիս between eternity signs, Little Ararat alongside</sub></td>
+    <td align="center"><img src="examples/teide.png" width="260" alt="Teide map card"><br>
+      <sub><b>Teide</b>: the volcano over the Las Cañadas caldera, Canarian pintadera stamps</sub></td>
+    <td align="center"><img src="examples/damavand.png" width="260" alt="Mount Damavand map card"><br>
+      <sub><b>Mount Damavand</b>: دماوند in Nastaliq, the lone cone of the Alborz, Persian girih stars</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="examples/kotor.png" width="260" alt="Bay of Kotor map card"><br>
+      <sub><b>Bay of Kotor</b>: early Cyrillic after the Cetinje press, the winged lion of St Mark</sub></td>
+    <td align="center"><img src="examples/moorea.png" width="260" alt="Moorea map card"><br>
+      <sub><b>Moorea</b>: the island and its two bays, Tahitian tatau shark-teeth bands</sub></td>
+    <td align="center"><img src="examples/cuillin.png" width="260" alt="The Cuillin map card"><br>
+      <sub><b>The Cuillin</b>: An Cuiltheann in insular uncial, the Black Cuillin ridge, Celtic knotwork</sub></td>
+  </tr>
 </table>
 
 ## The `liltopomaps` skill
@@ -51,6 +67,8 @@ python3 -m venv .venv
 
 On macOS the cards use the system fonts (Futura, Didot, Songti and friends). Elsewhere, open-licence lookalikes
 are downloaded on first use (Jost, GFS Didot, Noto, PT Sans…); the examples above were rendered with these.
+A few cards use open faces with no macOS counterpart (Ibarra Real Nova, Noto Nastaliq, Monomakh, Uncial Antiqua),
+downloaded the same way on every system.
 
 ## Rendering without Claude
 
@@ -63,14 +81,15 @@ $S/presets.sh santorini santorini.png               # re-render a saved card
 .venv/bin/python $S/realtopo.py --help              # every option
 ```
 
-Presets: `fuji`, `matterhorn`, `santorini`, `kailash`, `pyramiden`, `ararat`, `halong`, `ilulissat`.
+Presets: `fuji`, `matterhorn`, `santorini`, `kailash`, `pyramiden`, `ararat`, `halong`, `ilulissat`, `teide`,
+`damavand`, `kotor`, `moorea`, `cuillin`.
 
 - `realtopo.py`: the card renderer (placement, contour intervals, cartouche text/fonts/ornaments, water styles,
   labels, routes, data source).
 - `check_points.py`: checks label coordinates against the elevation data before they go on a card.
 - `zoom.py`: dot-level enlargement of parts of a card.
 - `preview.py`: dot-exact enlargement on a paper mock-up.
-- `fontfallback.py`: open-licence stand-ins for the macOS fonts.
+- `fontfallback.py`: open-licence stand-ins for the macOS fonts, and the extra open faces.
 
 ## Data and attribution
 
@@ -79,8 +98,9 @@ Presets: `fuji`, `matterhorn`, `santorini`, `kailash`, `pyramiden`, `ararat`, `h
 - [Terrain Tiles](https://registry.opendata.aws/terrain-tiles/) (Mapzen / AWS Open Data).
 - [swissALTI3D](https://www.swisstopo.admin.ch/en/height-model-swissalti3d), © swisstopo, used to patch
   satellite voids on Swiss peaks.
-- Stand-in fonts, downloaded on first use where the macOS fonts are missing: Jost, GFS Didot, Noto, Jomolhari,
-  PT Sans, Libre Baskerville and Amiri ([SIL Open Font License](https://openfontlicense.org), via
+- Fonts downloaded on first use (stand-ins where the macOS fonts are missing, plus the extra open faces): Jost,
+  GFS Didot, Noto, Jomolhari, PT Sans, Libre Baskerville, Amiri, Ibarra Real Nova, Monomakh and Uncial Antiqua
+  ([SIL Open Font License](https://openfontlicense.org), via
   [Google Fonts](https://github.com/google/fonts)); TeX Gyre Pagella (GUST Font License); Nimbus Sans
   ([URW base35](https://github.com/ArtifexSoftware/urw-base35-fonts)).
 

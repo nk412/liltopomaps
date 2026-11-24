@@ -47,6 +47,8 @@ ap.add_argument("--local-index", type=int, default=2)
 ap.add_argument("--local-size", type=float, default=30)
 ap.add_argument("--local-tracking", type=float, default=4)
 ap.add_argument("--local-bold", type=float, default=0, help="embolden native name by N px (thin hairlines)")
+ap.add_argument("--local-dy", type=float, default=0,
+                help="nudge the native name up (-) or down (+) by N px, for fonts with very tall line metrics (Nastaliq)")
 ap.add_argument("--title-size", type=float, default=15)
 ap.add_argument("--emblem", default="none", choices=["none", "swiss", "mining", "eternity", "greenland"],
                 help="small emblem beside the native name (swiss cross; mining = crossed miner's hammers; "
@@ -62,14 +64,18 @@ ap.add_argument("--label", action="append", default=[], metavar="KIND|TEXT|LAT|L
 ap.add_argument("--route", default=None, metavar="LAT,LON;LAT,LON",
                 help="dashed climbing route between points, snapped to the ridge crest")
 ap.add_argument("--summit", default=None, metavar="LAT,LON", help="mark the highest point near here (default: map max)")
+ap.add_argument("--summit-radius", type=float, default=1.0, help="km searched around --summit for the highest point")
 ap.add_argument("--local2", default=None, help="second native-script line (e.g. Devanagari under Tibetan)")
 ap.add_argument("--local2-font", default=None)
 ap.add_argument("--local2-index", type=int, default=0)
 ap.add_argument("--local2-size", type=float, default=16)
 ap.add_argument("--title-font", default=None, help="font for the spaced title (default Futura Bold)")
 ap.add_argument("--title-index", type=int, default=2)
-ap.add_argument("--ornament", default="none", choices=["none", "meander", "prayerflags", "dongson"],
-                help="cartouche decoration: Greek key friezes, or a string of prayer flags")
+ap.add_argument("--ornament", default="none",
+                choices=["none", "meander", "prayerflags", "dongson", "tatau", "knotwork", "girih", "pintadera", "lion"],
+                help="cartouche decoration: meander = Greek key friezes; prayerflags; dongson = bronze-drum bands; "
+                     "tatau = Tahitian shark-teeth bands; knotwork = Celtic plait; girih = Persian star bands; "
+                     "pintadera = Canarian stamp motifs; lion = winged lion of St Mark crest (Venice)")
 ap.add_argument("--water", default="hatch", choices=["hatch", "lines"],
                 help="water style: hatch (horizontal rules) or lines (engraved water-lining following the shore)")
 ap.add_argument("--cartouche-at", default=None, metavar="LAT,LON",
@@ -297,7 +303,7 @@ if args.summit:
     sla, slo = map(float, args.summit.split(","))
     r0 = int((north - sla) / (north - south) * H)
     c0 = int((slo - west) / (east - west) * W)
-    rad = max(3, int(1.0 / (wkm / W)))  # search 1 km around the given point
+    rad = max(3, int(args.summit_radius / (wkm / W)))  # search around the given point
     win = smooth[max(0, r0 - rad):r0 + rad, max(0, c0 - rad):c0 + rad]
     wy, wx = np.unravel_index(np.argmax(win), win.shape)
     py, px = max(0, r0 - rad) + wy, max(0, c0 - rad) + wx
@@ -559,8 +565,10 @@ if not args.no_summit:
 CW = 186
 local_h = (args.local_size + 6) if args.local else 0
 local2_h = (args.local2_size + 6) if args.local2 else 0
-orn_top = {"none": 0, "meander": 13, "prayerflags": 22, "dongson": 15}[args.ornament]
-orn_bot = {"meander": 12, "dongson": 14}.get(args.ornament, 0)
+BANDS = ("tatau", "knotwork", "girih", "pintadera")  # top + bottom bands, drawn like dongson
+orn_top = {"none": 0, "meander": 13, "prayerflags": 22, "dongson": 15, "lion": 32,
+           **{b: 15 for b in BANDS}}[args.ornament]
+orn_bot = {"meander": 12, "dongson": 14, **{b: 14 for b in BANDS}}.get(args.ornament, 0)
 CH = 9 + orn_top + local_h + local2_h + 77 + orn_bot
 M = FRAME + 7
 cx0 = M if args.corner in ("bl", "tl") else OUT_W - M - CW
@@ -631,6 +639,140 @@ def prayer_flags(x0, y0, length):
                         ((fx + min(9, k + 10)) * S, (fy + min(10, 10 - k)) * S)], fill=0, width=S)
 
 
+def band_rules(xa, xb, y0, h):
+    for yr in (y0 - 1.5, y0 + h + 1.5):
+        d.line([(xa * S, yr * S), (xb * S, yr * S)], fill=0, width=S)
+
+
+def tatau(x0, y0, length, w=6.0, h=11.0):
+    """Tahitian tatau band: two rows of niho mano (shark teeth), offset half a tooth so a white zigzag runs between."""
+    n = int(length // w)
+    x0 += (length - n * w) / 2
+    band_rules(x0, x0 + n * w, y0, h)
+    t = h * 0.42
+    for i in range(n):
+        bx = x0 + i * w
+        d.polygon([(bx * S, (y0 + h) * S), ((bx + w / 2) * S, (y0 + h - t) * S), ((bx + w) * S, (y0 + h) * S)], fill=0)
+        if i < n - 1:
+            tx = bx + w / 2
+            d.polygon([(tx * S, y0 * S), ((tx + w / 2) * S, (y0 + t) * S), ((tx + w) * S, y0 * S)], fill=0)
+
+
+def knotwork(x0, y0, length, h=11.0, P=14.0):
+    """Celtic interlace: two ribbons plaited over and under, as on Pictish stones and in the Iona manuscripts."""
+    n = max(1, int(length // P))
+    x0 += (length - n * P) / 2
+    xb = x0 + n * P
+    cy, A = y0 + h / 2, h / 2 - 1.6
+    xs = np.linspace(x0, xb, int(n * P * 4) + 1)
+
+    def strand(sign, xa, xz):
+        return [(x * S, (cy + sign * A * math.sin((x - x0) / P * 2 * math.pi)) * S) for x in xs[(xs >= xa) & (xs <= xz)]]
+
+    def ribbon(pts, casing=False):
+        if len(pts) > 1:
+            if casing:
+                d.line(pts, fill=255, width=round(5.2 * S), joint="curve")
+            d.line(pts, fill=0, width=round(3.4 * S), joint="curve")
+            d.line(pts, fill=255, width=round(1.2 * S), joint="curve")
+
+    ribbon(strand(1, x0, xb))
+    ribbon(strand(-1, x0, xb))
+    for k in range(1, 2 * n):  # a crossing every half twist; the ribbon on top alternates
+        xc = x0 + k * P / 2
+        ribbon(strand(1 if k % 2 else -1, xc - P / 6, xc + P / 6), casing=True)
+    band_rules(x0 - 2, xb + 2, y0, h)
+
+
+def girih(x0, y0, length, h=11.0):
+    """Persian girih band: eight-pointed khatam stars (two interlaced squares) linked by small cross tiles."""
+    R = h / 2 + 0.6
+    step = 2 * R + 5
+    n = int((length - 2 * R) // step) + 1
+    x0 += (length - (n - 1) * step) / 2
+    cy = y0 + h / 2
+    band_rules(x0 - R - 3, x0 + (n - 1) * step + R + 3, y0, h)
+    for i in range(n):
+        cx = x0 + i * step
+        for rot in (0, math.pi / 4):  # two squares make the star; a white octagon opens its heart
+            sq = [((cx + R * math.cos(rot + k * math.pi / 2)) * S, (cy + R * math.sin(rot + k * math.pi / 2)) * S)
+                  for k in range(4)]
+            d.polygon(sq, fill=0)
+        oc = [((cx + R * 0.42 * math.cos(math.pi / 8 + k * math.pi / 4)) * S,
+               (cy + R * 0.42 * math.sin(math.pi / 8 + k * math.pi / 4)) * S) for k in range(8)]
+        d.polygon(oc, fill=255)
+        if i < n - 1:
+            mx, q = cx + step / 2, 1.8
+            d.polygon([(mx * S, (cy - q) * S), ((mx + q) * S, cy * S), (mx * S, (cy + q) * S), ((mx - q) * S, cy * S)], fill=0)
+
+
+def pintadera(x0, y0, length, h=11.0):
+    """Canarian pintadera band: clay seal stamps, concentric rings alternating with triangle-chequered squares."""
+    step = h + 5
+    n = int((length - h) // step) + 1
+    x0 += (length - (n - 1) * step - h) / 2
+    band_rules(x0 - 3, x0 + (n - 1) * step + h + 3, y0, h)
+    for i in range(n):
+        bx = x0 + i * step
+        if i % 2 == 0:
+            cx, cy = bx + h / 2, y0 + h / 2
+            for r, w in ((h / 2, 1), (h / 2 * 0.52, 1)):
+                d.ellipse([(cx - r) * S, (cy - r) * S, (cx + r) * S, (cy + r) * S], outline=0, width=w * S)
+            d.ellipse([(cx - 1) * S, (cy - 1) * S, (cx + 1) * S, (cy + 1) * S], fill=0)
+        else:
+            d.rectangle([bx * S, y0 * S, (bx + h) * S, (y0 + h) * S], outline=0, width=S)
+            c = h / 3
+            for a in range(3):
+                for b in range(3):
+                    if (a + b) % 2 == 0:
+                        X, Y = bx + a * c, y0 + b * c
+                        d.polygon([(X * S, (Y + c) * S), ((X + c) * S, (Y + c) * S), ((X + c) * S, Y * S)], fill=0)
+
+
+def lion_band(x0, y0, length, h=28.0):
+    """Crest: the winged lion of St Mark (haloed, wing raised, paw on the gospel book) between double rules."""
+    lw = h * 1.4
+    k = h * S * 4                                          # mask pixels per unit of lion height
+    m_ = Image.new("L", (round(lw * S * 4), round(h * S * 4)), 0)
+    md = ImageDraw.Draw(m_)
+
+    def P(*pts):
+        return [(px * k, py * k) for px, py in pts]
+
+    def ell(xa, ya, xb, yb, **kw):
+        md.ellipse([xa * k, ya * k, xb * k, yb * k], **kw)
+
+    md.polygon(P((0.46, 0.47), (0.47, 0.22), (0.55, 0.07), (0.70, 0.00), (0.90, 0.01), (1.10, 0.07), (0.99, 0.15),
+                 (1.05, 0.21), (0.93, 0.25), (0.97, 0.32), (0.85, 0.35), (0.87, 0.42), (0.73, 0.44), (0.64, 0.50)),
+               fill=255)                                                                    # wing, scalloped edge
+    for tip in ((0.66, 0.05), (0.98, 0.13), (0.92, 0.24), (0.85, 0.34)):                    # feather lines
+        md.line(P((0.55, 0.47), tip), fill=0, width=round(0.03 * k))
+    ell(0.07, 0.05, 0.45, 0.43, outline=255, width=round(0.05 * k))                        # halo
+    ell(0.12, 0.10, 0.40, 0.38, fill=0)
+    md.polygon(P(*[(0.27 + (0.125 if i % 2 == 0 else 0.095) * math.cos(i / 20 * 2 * math.pi),
+                    0.25 + (0.125 if i % 2 == 0 else 0.095) * math.sin(i / 20 * 2 * math.pi)) for i in range(20)]),
+               fill=255)                                                                    # shaggy mane
+    ell(0.06, 0.20, 0.22, 0.33, fill=255)                                                   # muzzle
+    md.polygon(P((0.20, 0.28), (0.38, 0.22), (0.50, 0.52), (0.30, 0.60)), fill=255)         # chest
+    ell(0.32, 0.42, 1.12, 0.64, fill=255)                                                   # body
+    for x_ in (0.41, 0.85, 1.00):                                                           # standing legs + paws
+        md.rectangle([x_ * k, 0.55 * k, (x_ + 0.065) * k, 0.95 * k], fill=255)
+        md.rectangle([(x_ - 0.05) * k, 0.91 * k, (x_ + 0.065) * k, 0.97 * k], fill=255)
+    md.polygon(P((0.30, 0.46), (0.40, 0.54), (0.17, 0.56), (0.15, 0.50)), fill=255)         # paw raised on the book
+    md.rectangle([0.02 * k, 0.56 * k, 0.24 * k, 0.92 * k], outline=255, width=round(0.05 * k))  # the gospel
+    md.line(P((0.13, 0.57), (0.13, 0.91)), fill=255, width=round(0.04 * k))
+    md.line(P((1.10, 0.50), (1.22, 0.47), (1.28, 0.36), (1.25, 0.24), (1.31, 0.15)), fill=255,
+            width=round(0.05 * k), joint="curve")                                           # tail
+    ell(1.27, 0.07, 1.38, 0.18, fill=255)                                                   # tuft
+    m_ = m_.resize((round(lw * S), round(h * S)), Image.LANCZOS).point(lambda v: 255 if v > 110 else 0)
+    lx = x0 + (length - lw) / 2
+    canvas.paste(0, (round(lx * S), round(y0 * S)), m_)
+    cy = y0 + h * 0.62
+    for yr in (cy - 1.2, cy + 1.2):
+        d.line([(x0 * S, yr * S), ((lx - 4) * S, yr * S)], fill=0, width=S)
+        d.line([((lx + lw + 4) * S, yr * S), ((x0 + length) * S, yr * S)], fill=0, width=S)
+
+
 y = cy0 + 9
 if args.ornament == "meander":
     meander(cx0 + 9, cy0 + 8, CW - 18)
@@ -643,9 +785,17 @@ elif args.ornament == "dongson":
 elif args.ornament == "prayerflags":
     prayer_flags(cx0 + 7, cy0 + 9, CW - 14)
     y += orn_top
+elif args.ornament in BANDS:
+    band = {"tatau": tatau, "knotwork": knotwork, "girih": girih, "pintadera": pintadera}[args.ornament]
+    band(cx0 + 9, cy0 + 9, CW - 18)
+    band(cx0 + 9, cy0 + CH - 9 - 11, CW - 18)
+    y += orn_top
+elif args.ornament == "lion":
+    lion_band(cx0 + 9, cy0 + 8, CW - 18)
+    y += orn_top
 if args.local:
     f_local = font(args.local_font or CJK, args.local_size, args.local_index)
-    lw = tracked((mid * S, y * S), args.local, f_local, args.local_tracking, anchor_center=True,
+    lw = tracked((mid * S, (y + args.local_dy) * S), args.local, f_local, args.local_tracking, anchor_center=True,
                  bold=args.local_bold) / S
     if args.emblem == "mining":  # Schlägel und Eisen: two crossed miner's hammers
         e = args.local_size * 0.95

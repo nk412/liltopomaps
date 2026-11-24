@@ -62,8 +62,8 @@ well. The Netherlands has no relief worth a card. Want a mountain, island or dra
 Then let the user choose.
 
 Existing cards (re-render with `$SKILL/scripts/presets.sh NAME [out.png]`): `fuji`, `matterhorn`, `santorini`,
-`kailash`, `pyramiden`, `ararat`, `halong`, `ilulissat`. Study a preset before making a new card — it's the best
-reference for flag combinations.
+`kailash`, `pyramiden`, `ararat`, `halong`, `ilulissat`, `teide`, `damavand`, `kotor`, `moorea`, `cuillin`. Study a
+preset before making a new card — it's the best reference for flag combinations.
 
 ## The chassis — never change
 
@@ -98,11 +98,22 @@ Pick, for this place specifically:
      hatched sea so the karst islands stand out white.
    - Ilulissat: Baskerville + Greenlandic Kangerlua, **Greenland flag** emblem, chart-style **iceberg symbols**
      (`--ice`) over the ice-choked fjord.
+   - Teide: El Teide in Ibarra Real Nova (Joaquín Ibarra's 1780 Madrid types) + the Guanche name Echeyde,
+     **Canarian pintadera** stamp bands (`--ornament pintadera`), the volcano set above its caldera rim.
+   - Damavand: دماوند in Nastaliq (the Persian calligraphic hand), **Persian girih** star bands (`--ornament girih`),
+     200 m contours with heavy lines so the lone cone stands out of the Alborz.
+   - Bay of Kotor: Бока которска in Monomakh (early Cyrillic, after the Crnojević press at Cetinje, 1494) under a
+     **winged lion of St Mark** crest (`--ornament lion`, Kotor was Venetian), towns named in Cyrillic, hatched bay.
+   - Moorea: Mo’orea in Didot (French Polynesia), **Tahitian tatau** shark-teeth bands (`--ornament tatau`; tatau
+     is where "tattoo" comes from), water-lined island silhouette, compass rose, bay names in the sea.
+   - The Cuillin: An Cuiltheann in Uncial Antiqua (insular uncial, as in the Iona manuscripts), **Celtic knotwork**
+     bands (`--ornament knotwork`), 50 m contours left dark on purpose: these are the Black Cuillin.
    Don't repeat an ornament unless it is genuinely the local convention. If a new ornament is needed, add it to
    `$SKILL/scripts/realtopo.py` as another `--ornament` choice (see `meander()` / `prayer_flags()` for the pattern).
 3. **Water style** to suit: `--water hatch` (lakes; Fuji/Kailash) or `--water lines` (seas/coasts; Santorini).
    In fjords/narrow seas framed by dense contours use `--water-rings 3`: deep water-lining looks like more contours
-   and land/water stop reading apart.
+   and land/water stop reading apart. If even 3 rings read as contours (Kotor's narrow bay under limestone walls),
+   hatch the water instead.
 4. **North:** `--north arrow` default; `--north rose` for coastal/nautical places.
 
 ## Composition rules (learned the hard way)
@@ -113,7 +124,8 @@ Pick, for this place specifically:
 2. **Then put the cartouche over the least interesting ground** — open sea, flat plain, glacier plateau — never
    over the hero, named places, or labels. Use `--corner` or, if no corner is empty, `--cartouche-at LAT,LON`.
    Variety of corner is only a tie-breaker: never move the cartouche just to vary it.
-   So far: Fuji bl, Matterhorn br, Santorini tr, Kailash centred on the Barkha plain.
+   So far: Fuji bl, Matterhorn br, Santorini tr, Kailash centred on the Barkha plain, Teide br over the south
+   flank, Kotor tr over the karst plateau, Moorea centred in the open sea below the island, Cuillin bl over the sea.
 3. **Every label coordinate must be verified against the DEM** (`check_points.py`). If a coordinate doesn't check
    out, fix it or drop the feature. Never draw a wrong route/place (the Kailash kora was dropped because the
    waypoints were 450–650 m off in elevation).
@@ -138,7 +150,14 @@ Pick, for this place specifically:
 - Only pass `--peak` when the true height is known for sure; `--peak 0` labels the measured DEM height at the
   marked summit (Pyramiden: 881 m measured vs an unverified remembered 935 m — don't draw unverified numbers).
 - Pass the true summit height via `--peak` when known, and `--summit LAT,LON` when the map max isn't the hero.
-  Secondary summits: `--label "summit|Name 7,694|lat|lon"` snaps to the local max within 3 km.
+  `--summit` searches 1 km around the point; narrow it with `--summit-radius KM` when a neighbour reads higher in
+  the DEM (Cuillin: Sgùrr Dearg reads above Sgùrr Alasdair, which is the true high point).
+  Secondary summits: `--label "summit|Name 7,694|lat|lon"` snaps to the local max within 3 km — so a subsidiary peak
+  close to a higher one (Pico Viejo, 2 km from Teide) must use `peak` (no snapping) at its verified local maximum.
+- Find coordinates from the DEM itself (local maxima for peaks; a distance transform of the water mask for the
+  widest open water to put a bay name in) instead of guessing again.
+- Coordinate pairs that start with a minus go with `=` (`--summit=-17.55,-149.82`, `--cartouche-at=-17.66,-149.8`):
+  argparse reads a bare `-17.55,...` as a flag. Single numbers (`--lat -17.5`) are fine.
 - Caches: `~/.cache/liltopomaps/tiles`, `~/.cache/liltopomaps/dem` (Copernicus tiles are ~40 MB each).
 
 ## Fonts
@@ -165,7 +184,18 @@ to `/System/Library/Fonts/`. Known-good:
 | Ge'ez (Ethiopia) | `Supplemental/KefaIII.ttf` | Noto Serif Ethiopic | untested |
 | Thai/Khmer/Lao/Myanmar/Sinhala | `* Sangam MN` / `* MN` families | none: pass an installed Noto Serif file | untested |
 
-Faces marked macOS only, and any font not in this table, must be given as a file that exists on this machine.
+Open faces with no macOS counterpart, named by file name alone (e.g. `--local-font UncialAntiqua-Regular.ttf`) and
+downloaded on every system:
+
+| Use | File name | Notes |
+|---|---|---|
+| Spanish, classical | `IbarraRealNova-Bold.ttf`, `IbarraRealNova-Italic.ttf` | Ibarra's Real types (Madrid, 1780); Teide |
+| Persian / Urdu calligraphic | `NotoNastaliqUrdu-Bold.ttf` | very tall line metrics: add `--local-dy` (about −0.9 × size); Damavand |
+| Arabic-script labels | `NotoNaskhArabic-SemiBold.ttf` | covers Persian letters (پ چ ژ گ) |
+| Early Cyrillic | `Monomakh-Regular.ttf` | after early printed Church Slavonic; Kotor |
+| Gaelic / insular | `UncialAntiqua-Regular.ttf` | insular uncial; Cuillin |
+
+Faces marked macOS only, and any font in neither table, must be given as a file that exists on this machine.
 
 Futura has no ū/ō macrons — write "Honshu". **Never use Snell Roundhand** or other frilly Latin scripts: they
 fight the engraved survey-sheet style.
@@ -213,12 +243,13 @@ card and any trade-offs, and invite feedback. On feedback, re-render and re-prev
 placement   --lat --lon --km --aspect
 data        --source {terrarium,copernicus,copernicus90} --swiss-patch KM --hillshade PNG
 contours    --interval M --major M
-summit      --summit LAT,LON --peak M | --no-summit
-cartouche   --local TEXT --local-font F --local-index I --local-size PX --local-tracking PX --local-bold PX
+summit      --summit LAT,LON --summit-radius KM --peak M | --no-summit
+cartouche   --local TEXT --local-font F --local-index I --local-size PX --local-tracking PX --local-bold PX --local-dy PX
             --local2 TEXT --local2-font F --local2-index I --local2-size PX
             --title TEXT --title-size PX --title-font F --title-index I --sub TEXT
             --corner {bl,br,tl,tr} | --cartouche-at LAT,LON
-            --ornament {none,meander,prayerflags,dongson} --emblem {none,swiss,mining,eternity,greenland}
+            --ornament {none,meander,prayerflags,dongson,tatau,knotwork,girih,pintadera,lion}
+            --emblem {none,swiss,mining,eternity,greenland}
 lines       --minor-width PT --major-width PT --coast-width PT   (defaults 0.45 / 1.35 / 1.0)
 map extras  --water {hatch,lines} --water-rings N --north {arrow,rose,none} --north-corner C --grid KM --shade
             --ice "LAT0,LON0,LAT1,LON1[,SPACING[,FADE]]"   (iceberg symbols over water in the box; repeatable)
