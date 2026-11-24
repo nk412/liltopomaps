@@ -62,8 +62,10 @@ well. The Netherlands has no relief worth a card. Want a mountain, island or dra
 Then let the user choose.
 
 Existing cards (re-render with `$SKILL/scripts/presets.sh NAME [out.png]`): `fuji`, `matterhorn`, `santorini`,
-`kailash`, `pyramiden`, `ararat`, `halong`, `ilulissat`, `teide`, `damavand`, `kotor`, `moorea`, `cuillin`. Study a
-preset before making a new card — it's the best reference for flag combinations.
+`kailash`, `pyramiden`, `ararat`, `halong`, `ilulissat`, `teide`, `damavand`, `kotor`, `moorea`, `cuillin`,
+`pingualuit`, `ramon`, `paektu`, `stromboli`, `gavarnie`, `drakensberg`, `wadirum`, `machupicchu`, `popoizta`,
+`reunion`, `taranaki`, `adamspeak`. Study a preset before making a new card — it's the best reference for flag
+combinations.
 
 ## The chassis — never change
 
@@ -108,6 +110,26 @@ Pick, for this place specifically:
      is where "tattoo" comes from), water-lined island silhouette, compass rose, bay names in the sea.
    - The Cuillin: An Cuiltheann in Uncial Antiqua (insular uncial, as in the Iona manuscripts), **Celtic knotwork**
      bands (`--ornament knotwork`), 50 m contours left dark on purpose: these are the Black Cuillin.
+   - Pingualuit: ᐱᖑᐊᓗᐃᑦ in Inuktitut syllabics under an **inuksuk** crest; 10 m contours for a 160 m crater rim, the
+     lake (Pingualuk) and the tundra's ponds hatched.
+   - Makhtesh Ramon: מכתש רמון in Frank Ruhl (the classic Hebrew book face) under a **Nubian ibex**; cropped to the
+     wide eastern part of the 40 km crater, heavy lines for the desert.
+   - Paektu / Changbai: 백두산 + 长白山 (both names for the border mountain), **Korean a-ja-sal lattice** bands,
+     Heaven Lake named 천지 天池 on the water.
+   - Stromboli: Libre Bodoni (Parma) + the ancient Greek name Στρογγύλη, **trinacria** crest for Sicily, water-lined
+     island, Sciara del Fuoco on its flank.
+   - Gavarnie: Occitan Gavarnia in EB Garamond under the **Occitan cross**; Le Taillon, the Brèche de Roland, Marboré.
+   - Drakensberg Amphitheatre: uKhahlamba (Zulu, "barrier of spears"), **Zulu beadwork** bands, no feature labels.
+   - Wadi Rum: وادي رم in Amiri, **Bedouin sadu** weaving bands, Jebel Rum and Umm Ishrin among the sand valleys.
+   - Machu Picchu: Quechua Machu Pikchu in Cinzel, **Inca tocapu** squares, citadel, Wayna Pikchu, the Urubamba.
+   - Popocatépetl & Iztaccíhuatl: Ibarra Real Nova again (Spanish colonial printing), **xicalcoliuhqui stepped
+     fret**, title "THE TWO VOLCANOES", Paso de Cortés between them.
+   - Piton des Neiges (Réunion): Didot, **Creole lambrequins** (the pierced eave fringes of Creole houses), the three
+     cirques Cilaos, Mafate and Salazie named.
+   - Taranaki: Taranaki Maunga in Palatino, **kōwhaiwhai** koru-scroll bands, the cone and its ring plain, Pouakai and
+     Kaitake.
+   - Adam's Peak: ශ්‍රී පාද (Sinhala) + சிவனொளிபாதமலை (Tamil), **pala pethi** lotus-petal bands, the peak above the
+     Maussakele and Castlereagh reservoirs.
    Don't repeat an ornament unless it is genuinely the local convention. If a new ornament is needed, add it to
    `$SKILL/scripts/realtopo.py` as another `--ornament` choice (see `meander()` / `prayer_flags()` for the pattern).
 3. **Water style** to suit: `--water hatch` (lakes; Fuji/Kailash) or `--water lines` (seas/coasts; Santorini).
@@ -137,6 +159,8 @@ Pick, for this place specifically:
    a card — the hero must read in bold lines (cliff bands, coastlines, major contours, solid water rims).
    Remedy (Pyramiden v2): `--minor-width 0.75 --major-width 1.6 --coast-width 1.5`, no `--shade`. Consider these
    heavier weights the default for sparse terrain (glaciers, plateaus, gentle slopes).
+8. **Label only what checks out.** If the DEM's maxima can't be matched to named summits with confidence
+   (Drakensberg), leave the card unlabelled rather than guess: a clean escarpment beats a wrong name.
 
 ## Data
 
@@ -145,6 +169,9 @@ Pick, for this place specifically:
 - `--source copernicus90`: GLO-90, for tiles GLO-30 doesn't publish (e.g. N39E044 around Ararat).
 - Satellite DEMs have **voids on near-vertical faces** (smooth blobs; summits read low). Signs: summit far below the
   true height, smooth hillshade on a famous peak. Check with `--hillshade hs.png` (saves shaded relief of the data).
+  When walls are smoothed but the shape survives (Gavarnie's cirque), frame tighter so the bowl itself reads.
+- Long, thin features (Makhtesh Ramon, 40 km × 2–10 km) don't fit a portrait card whole: render a wide hillshade
+  first to find the shape, then crop to its most characteristic part.
 - Switzerland: `--swiss-patch KM` blends swisstopo swissALTI3D (2 m) — fixes the Matterhorn completely.
   Other national surveys could be added similarly if a card needs it.
 - Only pass `--peak` when the true height is known for sure; `--peak 0` labels the measured DEM height at the
@@ -195,7 +222,18 @@ downloaded on every system:
 | Early Cyrillic | `Monomakh-Regular.ttf` | after early printed Church Slavonic; Kotor |
 | Gaelic / insular | `UncialAntiqua-Regular.ttf` | insular uncial; Cuillin |
 
+| Hebrew | `FrankRuhlLibre-Bold.ttf` | Frank-Rühl, the classic Hebrew book face; Ramon |
+| Inuktitut / Cree syllabics | `NotoSansCanadianAboriginal-Bold.ttf` | Pingualuit |
+| Korean / Simplified Chinese, bold | `NotoSerifKR-Bold.ttf`, `NotoSerifSC-Bold.ttf` | Paektu (Songti TC lacks simplified forms) |
+| Italian, classical | `LibreBodoni-Bold.ttf` | Bodoni (Parma); Stromboli |
+| French, classical | `EBGaramond-Bold.ttf` | Garamond (Paris); Gavarnie |
+| Roman capitals | `Cinzel-Bold.ttf` | inscriptional caps; Machu Picchu |
+| Sinhala / Tamil | `NotoSerifSinhala-Bold.ttf`, `NotoSerifTamil-SemiBold.ttf` | Adam's Peak; ZWJ conjuncts (ශ්‍රී) shape fine |
+| Arabic, bold | `Amiri-Bold.ttf` | tall metrics: `--local-dy` about −0.33 × size; Wadi Rum |
+
 Faces marked macOS only, and any font in neither table, must be given as a file that exists on this machine.
+For fonts with unusual line metrics, name the open face directly (not a macOS face it stands in for), so the
+`--local-dy` nudge holds on every system.
 
 Futura has no ū/ō macrons — write "Honshu". **Never use Snell Roundhand** or other frilly Latin scripts: they
 fight the engraved survey-sheet style.
@@ -223,7 +261,7 @@ fight the engraved survey-sheet style.
    Fix overlaps, clipped labels, unreadable text.
 5. **Preview** (see below) — every card ends here.
 6. Once the card is settled, add the final command as a new case in `$SKILL/scripts/presets.sh` so it can be
-   re-rendered by name.
+   re-rendered by name. (In the liltopomaps repo, also add a 2× image to `examples/` and an entry in `GALLERY.md`.)
 
 ## Preview
 
@@ -248,7 +286,9 @@ cartouche   --local TEXT --local-font F --local-index I --local-size PX --local-
             --local2 TEXT --local2-font F --local2-index I --local2-size PX
             --title TEXT --title-size PX --title-font F --title-index I --sub TEXT
             --corner {bl,br,tl,tr} | --cartouche-at LAT,LON
-            --ornament {none,meander,prayerflags,dongson,tatau,knotwork,girih,pintadera,lion}
+            --ornament {none,meander,prayerflags,dongson,tatau,knotwork,girih,pintadera,lion,lattice,beadwork,sadu,
+                        tocapu,stepfret,lambrequin,kowhaiwhai,lotus,inuksuk,ibex,trinacria,occitan}
+                        (bands: top + bottom; lion/inuksuk/ibex/trinacria/occitan: a crest above the name)
             --emblem {none,swiss,mining,eternity,greenland}
 lines       --minor-width PT --major-width PT --coast-width PT   (defaults 0.45 / 1.35 / 1.0)
 map extras  --water {hatch,lines} --water-rings N --north {arrow,rose,none} --north-corner C --grid KM --shade

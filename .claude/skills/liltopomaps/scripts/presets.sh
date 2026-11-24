@@ -4,6 +4,8 @@
 HERE="$(cd "$(dirname "$0")" && pwd)"
 PY="${PY:-.venv/bin/python}"
 OUT="${2:-$1.png}"
+SF=/System/Library/Fonts/Supplemental
+FU=$SF/Futura.ttc
 
 case "$1" in
   fuji)
@@ -163,6 +165,102 @@ case "$1" in
       --label "peak|Sgùrr nan Gillean|57.2485|-6.1927|font=$FU:2:10.5" --label "peak|Blà Bheinn|57.2193|-6.0931|font=$FU:2:10.5" \
       --label "text|Loch Coruisk|57.2060|-6.1700|font=$FU:1:11" --label "text|Loch Scavaig|57.172|-6.137|font=$FU:1:10.5"
     ;;
+  pingualuit)
+    # Inuktitut syllabics; an impact crater lake in the tundra; 10 m contours for the 160 m rim
+    $PY "$HERE/realtopo.py" "$OUT" --source copernicus --lat 61.2632 --lon -73.66 --km 8 --interval 10 --major 50 --no-summit \
+      --local "ᐱᖑᐊᓗᐃᑦ" --local-font NotoSansCanadianAboriginal-Bold.ttf --local-index 0 --local-size 24 --local-tracking 1 \
+      --title "PINGUALUIT CRATER" --title-size 12 --sub "Nunavik · Québec, Canada" --ornament inuksuk --water hatch \
+      --cartouche-at "61.234,-73.66" --label "text|Pingualuk|61.2766|-73.66|font=$FU:1:11"
+    ;;
+  ramon)
+    # Frank Ruhl (the classic Hebrew book face); the long crater fits only at 30 km; heavy lines for sparse desert
+    $PY "$HERE/realtopo.py" "$OUT" --source copernicus --lat 30.60 --lon 34.86 --km 30 --interval 100 --major 500 --no-summit --minor-width 0.7 --major-width 1.6 --coast-width 1.5 \
+      --local "מכתש רמון" --local-font FrankRuhlLibre-Bold.ttf --local-index 0 --local-size 26 --local-tracking 0 \
+      --title "MAKHTESH RAMON" --title-size 12 --sub "Negev · Israel" --ornament ibex --cartouche-at "30.49,34.86" \
+      --label "place|Mitzpe Ramon|30.6106|34.8016"
+    ;;
+  paektu)
+    # Korean and Chinese names for the mountain on the border; Heaven Lake named in both
+    $PY "$HERE/realtopo.py" "$OUT" --source copernicus --lat 41.99 --lon 128.06 --km 14 --interval 50 --major 250 --peak 0 \
+      --local "백두산" --local-font NotoSerifKR-Bold.ttf --local-index 0 --local-size 26 --local-tracking 2 \
+      --local2 "长白山" --local2-font NotoSerifSC-Bold.ttf --local2-index 0 --local2-size 15 \
+      --title "PAEKTU · CHANGBAI" --title-size 12 --sub "China – North Korea border" --ornament lattice --water hatch \
+      --corner bl --label "text|천지 天池|42.006|128.056|font=NotoSerifKR-Bold.ttf:0:13"
+    ;;
+  stromboli)
+    # Bodoni (Parma) + the ancient Greek name Strongyle; trinacria for Sicily
+    $PY "$HERE/realtopo.py" "$OUT" --source copernicus --lat 38.775 --lon 15.218 --km 8 --interval 50 --major 250 --peak 0 \
+      --local "Stromboli" --local-font LibreBodoni-Bold.ttf --local-index 0 --local-size 26 --local-tracking 1 \
+      --local2 "Στρογγύλη" --local2-font $SF/Didot.ttc --local2-index 2 --local2-size 15 \
+      --title "AEOLIAN ISLANDS" --title-size 12 --sub "Tyrrhenian Sea · Sicily, Italy" --ornament trinacria \
+      --water lines --north rose --north-corner br --cartouche-at "38.748,15.218" \
+      --label "place|Stromboli|38.8040|15.2370" --label "place|Ginostra|38.7840|15.1930" \
+      --label "italic|Sciara del Fuoco|38.7950|15.1990"
+    ;;
+  gavarnie)
+    # Occitan name in Garamond; the DEM smooths the cirque walls, so the frame is tight on the bowl
+    $PY "$HERE/realtopo.py" "$OUT" --source copernicus --lat 42.705 --lon -0.02 --km 7 --interval 100 --major 500 --no-summit \
+      --local "Gavarnia" --local-font EBGaramond-Bold.ttf --local-index 0 --local-size 26 --local-tracking 1 \
+      --title "CIRQUE DE GAVARNIE" --title-size 11 --sub "Hautes-Pyrénées · France" --ornament occitan --corner tr \
+      --label "peak|Le Taillon 3,144|42.6935|-0.0513" --label "place|Brèche de Roland|42.6907|-0.0332" \
+      --label "peak|Marboré 3,248|42.6926|0.0126"
+    ;;
+  drakensberg)
+    # Zulu name; no feature labels: the DEM maxima don't match named summits with confidence
+    $PY "$HERE/realtopo.py" "$OUT" --source copernicus --lat -28.745 --lon 28.89 --km 11 --interval 100 --major 500 --no-summit \
+      --local "uKhahlamba" --local-font $SF/Baskerville.ttc --local-index 4 --local-size 21 --local-tracking 1 \
+      --title "THE AMPHITHEATRE" --title-size 12 --sub "Drakensberg · South Africa" --ornament beadwork --corner bl
+    ;;
+  wadirum)
+    # Amiri named directly so its tall line metrics (and --local-dy) are the same on every system
+    $PY "$HERE/realtopo.py" "$OUT" --source copernicus --lat 29.55 --lon 35.43 --km 20 --interval 100 --major 500 --no-summit \
+      --local "وادي رم" --local-font Amiri-Bold.ttf --local-index 0 --local-size 24 --local-tracking 0 --local-dy -8 \
+      --title "WADI RUM" --title-size 12 --sub "Valley of the Moon · Jordan" --ornament sadu --corner bl \
+      --label "summit|Jebel Rum 1,734|29.5749|35.3954" --label "peak|Umm Ishrin|29.5876|35.4426" \
+      --label "place|Rum|29.5770|35.4210"
+    ;;
+  machupicchu)
+    # Quechua spelling in Cinzel; Wayna Pikchu reads low in the DEM (sheer pinnacle), so no height
+    $PY "$HERE/realtopo.py" "$OUT" --source copernicus --lat -13.158 --lon -72.543 --km 7 --interval 100 --major 500 --no-summit \
+      --local "Machu Pikchu" --local-font Cinzel-Bold.ttf --local-index 0 --local-size 20 --local-tracking 1 \
+      --title "MACHU PICCHU" --title-size 12 --sub "Urubamba · Cusco, Peru" --ornament tocapu --corner br \
+      --label "place|citadel|-13.1631|-72.5450" --label "peak|Wayna Pikchu|-13.1554|-72.5454" \
+      --label "italic|Urubamba|-13.1493|-72.5529"
+    ;;
+  popoizta)
+    # the Smoking Mountain and the White Woman; xicalcoliuhqui stepped fret
+    $PY "$HERE/realtopo.py" "$OUT" --source copernicus --lat 19.10 --lon -98.70 --km 28 --interval 100 --major 500 --no-summit \
+      --local "Popocatépetl" --local-font IbarraRealNova-Bold.ttf --local-index 0 --local-size 22 --local-tracking 0.5 \
+      --local2 "Iztaccíhuatl" --local2-font IbarraRealNova-Italic.ttf --local2-index 0 --local2-size 16 \
+      --title "THE TWO VOLCANOES" --title-size 11 --sub "Puebla · México" --ornament stepfret --corner bl \
+      --label "summit|Popocatépetl|19.022|-98.628" --label "summit|Iztaccíhuatl|19.179|-98.642" \
+      --label "place|Paso de Cortés|19.087|-98.648"
+    ;;
+  reunion)
+    # the three cirques around Piton des Neiges; Creole lambrequins
+    $PY "$HERE/realtopo.py" "$OUT" --source copernicus --lat -21.10 --lon 55.48 --km 26 --interval 200 --major 1000 --peak 0 \
+      --local "Piton des Neiges" --local-font $SF/Didot.ttc --local-index 2 --local-size 19 --local-tracking 0.5 --local-bold 0.5 \
+      --title "LA RÉUNION" --title-size 12 --sub "Indian Ocean · France" --ornament lambrequin --corner br \
+      --label "italic|Cilaos|-21.135|55.470" --label "italic|Mafate|-21.060|55.425" --label "italic|Salazie|-21.045|55.525"
+    ;;
+  taranaki)
+    # the cone and its ring plain; kowhaiwhai koru scrolls
+    $PY "$HERE/realtopo.py" "$OUT" --source copernicus --lat -39.30 --lon 174.06 --km 28 --interval 100 --major 500 --peak 0 \
+      --local "Taranaki Maunga" --local-font $SF/Palatino.ttc --local-index 2 --local-size 19 --local-tracking 0.5 \
+      --title "MOUNT TARANAKI" --title-size 12 --sub "Taranaki · Aotearoa New Zealand" --ornament kowhaiwhai --corner bl \
+      --label "peak|Pouakai|-39.2382|174.0146" --label "peak|Kaitake|-39.1615|173.9660"
+    ;;
+  adamspeak)
+    # Sinhala Sri Pada + Tamil Sivanolipatha Malai; lotus petal (pala pethi) bands
+    $PY "$HERE/realtopo.py" "$OUT" --source copernicus --lat 6.825 --lon 80.535 --km 15 --interval 100 --major 500 --peak 0 \
+      --local "ශ්‍රී පාද" --local-font NotoSerifSinhala-Bold.ttf --local-index 0 --local-size 24 --local-tracking 0 \
+      --local2 "சிவனொளிபாதமலை" --local2-font NotoSerifTamil-SemiBold.ttf --local2-index 0 --local2-size 13 \
+      --title "ADAM'S PEAK" --title-size 12 --sub "Central Highlands · Sri Lanka" --ornament lotus --water hatch --corner br \
+      --label "text|Maussakele|6.8236|80.5536|font=$FU:1:10.5" --label "text|Castlereagh|6.8575|80.5867|font=$FU:1:10.5"
+    ;;
   *)
-    echo "usage: $0 fuji|matterhorn|santorini|kailash|pyramiden|ararat|halong|ilulissat|teide|damavand|kotor|moorea|cuillin [out.png]"; exit 1 ;;
+    echo "usage: $0 NAME [out.png], NAME one of:"
+    echo "  fuji matterhorn santorini kailash pyramiden ararat halong ilulissat teide damavand kotor moorea cuillin"
+    echo "  pingualuit ramon paektu stromboli gavarnie drakensberg wadirum machupicchu popoizta reunion taranaki adamspeak"
+    exit 1 ;;
 esac

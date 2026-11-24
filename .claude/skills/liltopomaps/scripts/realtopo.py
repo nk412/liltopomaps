@@ -72,10 +72,13 @@ ap.add_argument("--local2-size", type=float, default=16)
 ap.add_argument("--title-font", default=None, help="font for the spaced title (default Futura Bold)")
 ap.add_argument("--title-index", type=int, default=2)
 ap.add_argument("--ornament", default="none",
-                choices=["none", "meander", "prayerflags", "dongson", "tatau", "knotwork", "girih", "pintadera", "lion"],
+                choices=["none", "meander", "prayerflags", "dongson", "tatau", "knotwork", "girih", "pintadera", "lion",
+                         "lattice", "beadwork", "sadu", "tocapu", "stepfret", "lambrequin", "kowhaiwhai", "lotus",
+                         "inuksuk", "ibex", "trinacria", "occitan"],
                 help="cartouche decoration: meander = Greek key friezes; prayerflags; dongson = bronze-drum bands; "
                      "tatau = Tahitian shark-teeth bands; knotwork = Celtic plait; girih = Persian star bands; "
-                     "pintadera = Canarian stamp motifs; lion = winged lion of St Mark crest (Venice)")
+                     "pintadera = Canarian stamp motifs; lion = winged lion of St Mark crest (Venice); lattice = Korean a-ja-sal window lattice; beadwork = Zulu beads; sadu = Bedouin weaving; tocapu = Inca squares; "
+                     "stepfret = Mesoamerican xicalcoliuhqui; lambrequin = Creole eave fringe; kowhaiwhai = Maori koru scrolls; lotus = Sri Lankan petal band; crests: inuksuk, ibex, trinacria, occitan (cross)")
 ap.add_argument("--water", default="hatch", choices=["hatch", "lines"],
                 help="water style: hatch (horizontal rules) or lines (engraved water-lining following the shore)")
 ap.add_argument("--cartouche-at", default=None, metavar="LAT,LON",
@@ -565,9 +568,12 @@ if not args.no_summit:
 CW = 186
 local_h = (args.local_size + 6) if args.local else 0
 local2_h = (args.local2_size + 6) if args.local2 else 0
-BANDS = ("tatau", "knotwork", "girih", "pintadera")  # top + bottom bands, drawn like dongson
+BANDS = ("tatau", "knotwork", "girih", "pintadera", "lattice", "beadwork", "sadu", "tocapu", "stepfret",
+         "lambrequin", "kowhaiwhai", "lotus")  # top + bottom bands, drawn like dongson
+FLIPPED = ("lambrequin", "lotus")  # the bottom band is mirrored so it points away from the text
+CREST_H = {"inuksuk": 26, "ibex": 24, "trinacria": 30, "occitan": 26}  # centred crests, like the lion
 orn_top = {"none": 0, "meander": 13, "prayerflags": 22, "dongson": 15, "lion": 32,
-           **{b: 15 for b in BANDS}}[args.ornament]
+           **{b: 15 for b in BANDS}, **{c: h + 3 for c, h in CREST_H.items()}}[args.ornament]
 orn_bot = {"meander": 12, "dongson": 14, **{b: 14 for b in BANDS}}.get(args.ornament, 0)
 CH = 9 + orn_top + local_h + local2_h + 77 + orn_bot
 M = FRAME + 7
@@ -773,6 +779,232 @@ def lion_band(x0, y0, length, h=28.0):
         d.line([((lx + lw + 4) * S, yr * S), ((x0 + length) * S, yr * S)], fill=0, width=S)
 
 
+def lattice(x0, y0, length, h=11.0):
+    """Korean a-ja-sal window lattice: a row of cross-shaped frames with a solid heart, linked on a rail."""
+    w = h + 3
+    n = int(length // w)
+    x0 += (length - n * w) / 2
+    band_rules(x0, x0 + n * w, y0, h)
+    q, c = h / 4, h / 2
+    for i in range(n):
+        bx = x0 + i * w + 1.5
+        pts = [(bx + q, y0), (bx + h - q, y0), (bx + h - q, y0 + q), (bx + h, y0 + q), (bx + h, y0 + h - q),
+               (bx + h - q, y0 + h - q), (bx + h - q, y0 + h), (bx + q, y0 + h), (bx + q, y0 + h - q),
+               (bx, y0 + h - q), (bx, y0 + q), (bx + q, y0 + q)]
+        d.polygon([(a * S, b * S) for a, b in pts], outline=0, width=S)
+        r = h * 0.15
+        d.rectangle([(bx + c - r) * S, (y0 + c - r) * S, (bx + c + r) * S, (y0 + c + r) * S], fill=0)
+        if i < n - 1:
+            d.line([((bx + h) * S, (y0 + c) * S), ((bx + w) * S, (y0 + c) * S)], fill=0, width=S)
+
+
+def beadwork(x0, y0, length, h=11.0):
+    """Zulu beadwork: five rows of beads strung into interlocking diamonds."""
+    sp = h / 5
+    n = int(length // sp)
+    x0 += (length - (n - 1) * sp) / 2
+    band_rules(x0 - 2, x0 + (n - 1) * sp + 2, y0, h)
+    for c in range(n):
+        v = abs(c % 8 - 4)
+        for r in range(5):
+            if v == r or v == 4 - r or (r == 2 and c % 8 == 0):
+                bx, by = x0 + c * sp, y0 + sp / 2 + r * sp
+                d.ellipse([(bx - 0.75) * S, (by - 0.75) * S, (bx + 0.75) * S, (by + 0.75) * S], fill=0)
+
+
+def sadu(x0, y0, length, h=11.0):
+    """Bedouin sadu weaving: small teeth along both selvedges, a line of diamond 'eyes' (eyoun) between."""
+    w = 4.0
+    n = int(length // w)
+    x0 += (length - n * w) / 2
+    band_rules(x0, x0 + n * w, y0, h)
+    t = 2.6
+    for i in range(n):
+        bx = x0 + i * w
+        d.polygon([(bx * S, y0 * S), ((bx + w) * S, y0 * S), ((bx + w / 2) * S, (y0 + t) * S)], fill=0)
+        d.polygon([(bx * S, (y0 + h) * S), ((bx + w) * S, (y0 + h) * S), ((bx + w / 2) * S, (y0 + h - t) * S)], fill=0)
+    ew = 8.0
+    m = int((n * w) // ew)
+    ex0 = x0 + (n * w - m * ew) / 2
+    cy = y0 + h / 2
+    for j in range(m):
+        cx = ex0 + j * ew + ew / 2
+        d.polygon([((cx - 3.2) * S, cy * S), (cx * S, (cy - 2.2) * S), ((cx + 3.2) * S, cy * S), (cx * S, (cy + 2.2) * S)],
+                  outline=0, width=S)
+        d.rectangle([(cx - 0.6) * S, (cy - 0.6) * S, (cx + 0.6) * S, (cy + 0.6) * S], fill=0)
+
+
+def tocapu(x0, y0, length, h=11.0):
+    """Inca tocapu: a row of black squares, each with a different white figure, as woven on royal tunics."""
+    g = 2.0
+    n = int((length + g) // (h + g))
+    x0 += (length - (n * h + (n - 1) * g)) / 2
+    for i in range(n):
+        bx = x0 + i * (h + g)
+        d.rectangle([bx * S, y0 * S, (bx + h) * S, (y0 + h) * S], fill=0)
+        c, kind = h / 2, i % 4
+        if kind == 0:    # chequered quarters
+            d.rectangle([(bx + 1.5) * S, (y0 + 1.5) * S, (bx + c) * S, (y0 + c) * S], fill=255)
+            d.rectangle([(bx + c) * S, (y0 + c) * S, (bx + h - 1.5) * S, (y0 + h - 1.5) * S], fill=255)
+        elif kind == 1:  # saltire
+            for a, b in (((1.8, 1.8), (h - 1.8, h - 1.8)), ((1.8, h - 1.8), (h - 1.8, 1.8))):
+                d.line([((bx + a[0]) * S, (y0 + a[1]) * S), ((bx + b[0]) * S, (y0 + b[1]) * S)], fill=255, width=S)
+        elif kind == 2:  # square ring around a dark heart
+            d.rectangle([(bx + 2.2) * S, (y0 + 2.2) * S, (bx + h - 2.2) * S, (y0 + h - 2.2) * S], outline=255, width=S)
+        else:            # stepped diagonal
+            st = [(1.5, h - 1.5), (1.5, h - 4), (4, h - 4), (4, h - 6.5), (6.5, h - 6.5), (6.5, 1.5), (h - 1.5, 1.5),
+                  (h - 1.5, 4), (9, 4), (9, h - 4), (6.5, h - 4), (6.5, h - 1.5)]
+            d.polygon([((bx + a) * S, (y0 + b) * S) for a, b in st], fill=255)
+
+
+def stepfret(x0, y0, length, h=11.0):
+    """Mesoamerican xicalcoliuhqui: a stepped fret, stairs rising into a hooked scroll (Mitla, Aztec pottery)."""
+    w = 14.0
+    n = int(length // w)
+    x0 += (length - n * w) / 2
+    u = h / 11
+    path = [(0, 11), (0, 8.5), (2.5, 8.5), (2.5, 6), (5, 6), (5, 3.5), (7.5, 3.5), (7.5, 0), (13, 0), (13, 9),
+            (10, 9), (10, 3.5)]
+    for i in range(n):
+        bx = x0 + i * w
+        d.line([((bx + a * u) * S, (y0 + b * u) * S) for a, b in path], fill=0, width=round(1.4 * S), joint="curve")
+    d.line([(x0 * S, (y0 + h) * S), ((x0 + n * w) * S, (y0 + h) * S)], fill=0, width=round(1.4 * S))
+    d.line([(x0 * S, (y0 - 2) * S), ((x0 + n * w) * S, (y0 - 2) * S)], fill=0, width=S)
+
+
+def lambrequin(x0, y0, length, h=11.0, flip=False):
+    """Reunion Creole lambrequins: the pierced wooden fringe that hangs from the eaves of Creole houses."""
+    w = 7.0
+    n = int(length // w)
+    x0 += (length - n * w) / 2
+
+    def Y(v):
+        return y0 + (h - v if flip else v)
+
+    for v in (0, 1.6):
+        d.line([(x0 * S, Y(v) * S), ((x0 + n * w) * S, Y(v) * S)], fill=0, width=S)
+    for i in range(n):
+        bx = x0 + i * w
+        tongue = [(bx + 0.6, 2.4), (bx + 0.6, h - 4), (bx + w / 2, h), (bx + w - 0.6, h - 4), (bx + w - 0.6, 2.4)]
+        d.polygon([(a * S, Y(b) * S) for a, b in tongue], fill=0)
+        hx, hy = bx + w / 2, Y(h * 0.48)
+        d.ellipse([(hx - 1.2) * S, (hy - 1.2) * S, (hx + 1.2) * S, (hy + 1.2) * S], fill=255)
+
+
+def kowhaiwhai(x0, y0, length, h=11.0, P=14.0):
+    """Maori kowhaiwhai rafter pattern: white koru (unfurling fern fronds) curling off a running stem, on black."""
+    n = max(1, int(length // P))
+    x0 += (length - n * P) / 2
+    d.rectangle([x0 * S, y0 * S, (x0 + n * P) * S, (y0 + h) * S], fill=0)
+    cy, A = y0 + h / 2, h * 0.16
+    xs = np.linspace(x0, x0 + n * P, int(n * P * 4) + 1)
+    d.line([(x * S, (cy + A * math.sin((x - x0) / P * 2 * math.pi)) * S) for x in xs], fill=255, width=round(1.3 * S))
+    for k in range(2 * n):
+        xc = x0 + (k + 0.25) * P / 2 + (P / 4 if k % 2 else 0) - P / 8
+        up = k % 2 == 0
+        bx, by = xc + P * 0.18, cy + (-1 if up else 1) * h * 0.24
+        r = 2.1
+        d.ellipse([(bx - r) * S, (by - r) * S, (bx + r) * S, (by + r) * S], fill=255)
+        d.ellipse([(bx - 0.8) * S, (by - 0.8) * S, (bx + 0.8) * S, (by + 0.8) * S], fill=0)
+        d.line([(xc * S, (cy + (-1 if up else 1) * A) * S), ((bx - r * 0.6) * S, by * S)], fill=255, width=round(1.2 * S))
+
+
+def lotus(x0, y0, length, h=11.0, flip=False):
+    """Sri Lankan pala pethi: a row of lotus petals rising from a rail, as carved on temple steps and moonstones."""
+    w = 9.5
+    n = int(length // w)
+    x0 += (length - n * w) / 2
+
+    def Y(v):
+        return y0 + (v if flip else h - v)
+
+    for v in (0, 1.4):
+        d.line([(x0 * S, Y(v) * S), ((x0 + n * w) * S, Y(v) * S)], fill=0, width=S)
+    for i in range(n):
+        cx = x0 + i * w + w / 2
+        for hw, top in ((w / 2 - 0.3, h), (w / 2 - 2.0, h - 3.2)):
+            us = np.linspace(0, 1, 16)
+            left = [(cx - hw * (1 - u ** 1.7) ** 0.55, 2.0 + u * (top - 2.0)) for u in us]
+            right = [(cx + hw * (1 - u ** 1.7) ** 0.55, 2.0 + u * (top - 2.0)) for u in us[::-1]]
+            d.line([(a * S, Y(b) * S) for a, b in left + right], fill=0, width=S)
+
+
+def crest(x0, y0, length, h, aspect, paint):
+    """Centre a small emblem (painted on a 4x mask in units of its height) between double rules."""
+    lw = h * aspect
+    k = h * S * 4
+    m_ = Image.new("L", (round(lw * S * 4), round(h * S * 4)), 0)
+    paint(ImageDraw.Draw(m_), k)
+    m_ = m_.resize((round(lw * S), round(h * S)), Image.LANCZOS).point(lambda v: 255 if v > 110 else 0)
+    lx = x0 + (length - lw) / 2
+    canvas.paste(0, (round(lx * S), round(y0 * S)), m_)
+    cy = y0 + h * 0.55
+    for yr in (cy - 1.2, cy + 1.2):
+        d.line([(x0 * S, yr * S), ((lx - 4) * S, yr * S)], fill=0, width=S)
+        d.line([((lx + lw + 4) * S, yr * S), ((x0 + length) * S, yr * S)], fill=0, width=S)
+
+
+def paint_inuksuk(md, k):
+    """Inuksuk: the stone figure the Inuit build as a waymark."""
+    for a, b, c, e in ((0.33, 0.00, 0.57, 0.19), (0.00, 0.23, 0.90, 0.35), (0.22, 0.39, 0.68, 0.59),
+                       (0.10, 0.63, 0.80, 0.73), (0.14, 0.77, 0.36, 1.00), (0.54, 0.77, 0.76, 1.00)):
+        md.rectangle([a * k, b * k, c * k, e * k], fill=255)
+
+
+def paint_ibex(md, k):
+    """Nubian ibex in profile, its great ridged horns swept back."""
+    P = lambda *pts: [(x * k, y * k) for x, y in pts]
+    md.ellipse([0.36 * k, 0.42 * k, 1.16 * k, 0.70 * k], fill=255)                          # body
+    md.polygon(P((0.26, 0.26), (0.42, 0.20), (0.56, 0.50), (0.38, 0.56)), fill=255)         # neck
+    md.polygon(P((0.08, 0.36), (0.16, 0.24), (0.34, 0.20), (0.40, 0.30), (0.20, 0.40)), fill=255)  # head
+    md.polygon(P((0.15, 0.37), (0.22, 0.38), (0.17, 0.50)), fill=255)                        # beard
+    md.arc([0.30 * k, 0.02 * k, 0.86 * k, 0.62 * k], 185, 320, fill=255, width=round(0.085 * k))  # horn
+    for t in np.linspace(195, 310, 7):                                                        # horn ridges
+        a_ = math.radians(t)
+        cx, cy, r = 0.58, 0.32, 0.28
+        md.line(P((cx + (r - 0.06) * math.cos(a_), cy + (r - 0.06) * math.sin(a_)),
+                  (cx + (r + 0.05) * math.cos(a_), cy + (r + 0.05) * math.sin(a_))), fill=0, width=round(0.025 * k))
+    for x_ in (0.44, 0.56, 0.96, 1.07):                                                       # legs
+        md.rectangle([x_ * k, 0.62 * k, (x_ + 0.055) * k, 0.98 * k], fill=255)
+    md.polygon(P((1.12, 0.46), (1.22, 0.42), (1.17, 0.52)), fill=255)                        # tail
+
+
+def paint_trinacria(md, k):
+    """Trinacria: three running legs around a head, the emblem of Sicily."""
+    c = 0.5
+    md.ellipse([(c - 0.15) * k, (c - 0.15) * k, (c + 0.15) * k, (c + 0.15) * k], fill=255)
+    for i in range(3):
+        a = math.radians(90 + i * 120)
+        knee = (c + 0.29 * math.cos(a), c + 0.29 * math.sin(a))
+        b = a + math.radians(70)
+        ankle = (knee[0] + 0.21 * math.cos(b), knee[1] + 0.21 * math.sin(b))
+        f = b + math.radians(80)
+        toe = (ankle[0] + 0.09 * math.cos(f), ankle[1] + 0.09 * math.sin(f))
+        md.line([(c * k, c * k), (knee[0] * k, knee[1] * k), (ankle[0] * k, ankle[1] * k), (toe[0] * k, toe[1] * k)],
+                fill=255, width=round(0.12 * k), joint="curve")
+    md.ellipse([(c - 0.06) * k, (c - 0.07) * k, (c + 0.06) * k, (c + 0.05) * k], fill=0)
+
+
+def paint_occitan(md, k):
+    """Occitan cross: four flaring arms, each ending in three balls (twelve in all)."""
+    c = 0.5
+    for i in range(4):
+        a = math.radians(i * 90)
+        ux, uy, px, py = math.cos(a), math.sin(a), -math.sin(a), math.cos(a)
+        arm = [(c + ux * 0.04 + px * 0.05, c + uy * 0.04 + py * 0.05), (c + ux * 0.36 + px * 0.17, c + uy * 0.36 + py * 0.17),
+               (c + ux * 0.32 + px * 0.00, c + uy * 0.32 + py * 0.00), (c + ux * 0.36 - px * 0.17, c + uy * 0.36 - py * 0.17),
+               (c + ux * 0.04 - px * 0.05, c + uy * 0.04 - py * 0.05)]
+        md.polygon([(x * k, y * k) for x, y in arm], fill=255)
+        for off, rr in ((0.17, 0.42), (0.0, 0.45), (-0.17, 0.42)):
+            bx, by = c + ux * rr + px * off, c + uy * rr + py * off
+            md.ellipse([(bx - 0.055) * k, (by - 0.055) * k, (bx + 0.055) * k, (by + 0.055) * k], fill=255)
+    md.ellipse([(c - 0.07) * k, (c - 0.07) * k, (c + 0.07) * k, (c + 0.07) * k], fill=255)
+
+
+CRESTS = {"inuksuk": (0.9, paint_inuksuk), "ibex": (1.3, paint_ibex), "trinacria": (1.0, paint_trinacria),
+          "occitan": (1.0, paint_occitan)}
+
+
 y = cy0 + 9
 if args.ornament == "meander":
     meander(cx0 + 9, cy0 + 8, CW - 18)
@@ -786,9 +1018,14 @@ elif args.ornament == "prayerflags":
     prayer_flags(cx0 + 7, cy0 + 9, CW - 14)
     y += orn_top
 elif args.ornament in BANDS:
-    band = {"tatau": tatau, "knotwork": knotwork, "girih": girih, "pintadera": pintadera}[args.ornament]
+    band = {"tatau": tatau, "knotwork": knotwork, "girih": girih, "pintadera": pintadera, "lattice": lattice,
+            "beadwork": beadwork, "sadu": sadu, "tocapu": tocapu, "stepfret": stepfret, "lambrequin": lambrequin,
+            "kowhaiwhai": kowhaiwhai, "lotus": lotus}[args.ornament]
     band(cx0 + 9, cy0 + 9, CW - 18)
-    band(cx0 + 9, cy0 + CH - 9 - 11, CW - 18)
+    band(cx0 + 9, cy0 + CH - 9 - 11, CW - 18, **({"flip": True} if args.ornament in FLIPPED else {}))
+    y += orn_top
+elif args.ornament in CRESTS:
+    crest(cx0 + 9, cy0 + 8, CW - 18, CREST_H[args.ornament], *CRESTS[args.ornament])
     y += orn_top
 elif args.ornament == "lion":
     lion_band(cx0 + 9, cy0 + 8, CW - 18)
